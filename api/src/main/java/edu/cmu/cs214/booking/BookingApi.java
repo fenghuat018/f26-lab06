@@ -47,42 +47,19 @@ public interface BookingApi {
      * <p>Ids are assigned by the implementation, are unique, and increase in
      * creation order.
      *
-     * @param roomId      the room to book, non-null
-     * @param startMinute first minute of the booking, inclusive
-     * @param endMinute   first minute after the booking, exclusive; must be
-     *                    greater than {@code startMinute}
-     * @param waitlistKey caller's waitlist key, or null to decline waitlisting
+     * <p>The request notes are opaque caller-supplied text. This API stores
+     * them and hands them back on {@link Booking#getNotes()}; it never
+     * interprets them.
+     *
+     * @param request the booking request, non-null; its room id must be
+     *                non-null and its end minute must be greater than its start
+     *                minute
      * @return the CONFIRMED booking, the WAITLISTED booking, or null when the
      *         range conflicts and no waitlist key was given
-     * @throws IllegalArgumentException if {@code roomId} is null or
-     *         {@code endMinute} is not greater than {@code startMinute}
+     * @throws IllegalArgumentException if {@code request} is null, its room id
+     *         is null, or its end minute is not greater than its start minute
      */
-    Booking createBooking(String roomId, long startMinute, long endMinute,
-                          String waitlistKey);
-
-    /**
-     * Books a room for the half-open range {@code [startMinute, endMinute)}
-     * with caller-supplied notes.
-     *
-     * <p>This method follows the same booking, conflict, waitlist, id, and
-     * validation rules as
-     * {@link #createBooking(String, long, long, String)}. The notes are opaque
-     * caller-supplied text. This API stores them and hands them back on
-     * {@link Booking#getNotes()}; it never interprets them.
-     *
-     * @param roomId      the room to book, non-null
-     * @param startMinute first minute of the booking, inclusive
-     * @param endMinute   first minute after the booking, exclusive; must be
-     *                    greater than {@code startMinute}
-     * @param waitlistKey caller's waitlist key, or null to decline waitlisting
-     * @param notes       caller's notes for the booking, or null if none
-     * @return the CONFIRMED booking, the WAITLISTED booking, or null when the
-     *         range conflicts and no waitlist key was given
-     * @throws IllegalArgumentException if {@code roomId} is null or
-     *         {@code endMinute} is not greater than {@code startMinute}
-     */
-    Booking createBooking(String roomId, long startMinute, long endMinute,
-                          String waitlistKey, String notes);
+    Booking createBooking(BookingRequest request);
 
     /**
      * Returns every non-cancelled booking for one room, ordered by start minute.

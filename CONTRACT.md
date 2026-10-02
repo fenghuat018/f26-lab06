@@ -72,11 +72,53 @@ After updating the `api` tests to call `createBooking(BookingRequest)`, the `api
 
 ### Step 1: after the fold
 
-**What the build printed.** Paste it for each module, including file and
-line for anything that failed.
+**What the build printed.** 
+
+`mvn -B clean test` built `lab06-booking-parent` first:
+
+`lab06-booking-parent ............................... SUCCESS`
+
+Then it built `lab06-api`. The API module compiled 5 source files, compiled
+its test source, and ran `edu.cmu.cs214.booking.InMemoryBookingServiceTest`:
+
+`Tests run: 6, Failures: 0, Errors: 0, Skipped: 0`
+
+`lab06-api .......................................... SUCCESS`
+
+Then it tried to build `lab06-consumer`, but compilation failed:
+
+`lab06-consumer ..................................... FAILURE`
+
+The compiler errors were:
+
+`consumer/src/main/java/edu/cmu/cs214/frontdesk/FrontDesk.java:[27,19] method createBooking in interface edu.cmu.cs214.booking.BookingApi cannot be applied to given types;`
+
+`required: edu.cmu.cs214.booking.BookingRequest`
+
+`found:    java.lang.String,long,long,<nulltype>`
+
+`reason: actual and formal argument lists differ in length`
+
+`consumer/src/main/java/edu/cmu/cs214/frontdesk/FrontDesk.java:[33,19] method createBooking in interface edu.cmu.cs214.booking.BookingApi cannot be applied to given types;`
+
+`required: edu.cmu.cs214.booking.BookingRequest`
+
+`found:    java.lang.String,long,long,java.lang.String`
+
+`reason: actual and formal argument lists differ in length`
+
+The build ended with `BUILD FAILURE`.
 
 **Which module's tests ran, and which did not.** And what that tells you about
 who can detect a contract break.
+
+The `api` module's tests ran and passed. The `consumer` module's tests did not
+run, because `consumer` failed at compile time before Surefire could start its
+test phase.
+
+This shows that the producer's own tests can pass even when the external
+consumer is broken. The contract break is detected by compiling the untouched
+consumer against the changed API.
 
 ### Step 2: the deprecation path
 
