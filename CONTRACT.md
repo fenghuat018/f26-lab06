@@ -57,13 +57,18 @@ but it could fail at compile time.
 
 ### Prediction (write this before you run the build)
 
-**Will the untouched consumer still compile and pass?** Yes or no, and if no,
-which module goes red and whether at compile time or test time.
+**Will the untouched consumer still compile and pass?** 
 
-**Where.** Name the call sites you expect to be affected, if any.
+No. The untouched consumer should fail at compile time in the `lab06-consumer` module, because its existing calls still use the old positional `createBooking(...)` signature. If those overloads are removed and replaced by `createBooking(BookingRequest)`, the compiler will not find a matching method.
 
-**What about the tests in `api/`, after you update them?** And whether their
-result is evidence about the consumer.
+**Where.** 
+
+The affected call sites are in `consumer/src/main/java/edu/cmu/cs214/frontdesk/FrontDesk.java`:  
+`bookWalkIn(...)` calls `api.createBooking(roomId, startMinute, endMinute, null)`, and `joinWaitlist(...)` calls `api.createBooking(roomId, startMinute, endMinute, guestName)`.
+
+**What about the tests in `api/`, after you update them?** 
+
+After updating the `api` tests to call `createBooking(BookingRequest)`, the `api` module should compile and its tests should pass. But that is not evidence that the consumer still works, because the consumer is a separate module with its own unchanged call sites. The real contract break would show up when Maven tries to compile `lab06-consumer`.
 
 ### Step 1: after the fold
 
