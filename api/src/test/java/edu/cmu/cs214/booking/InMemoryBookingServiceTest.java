@@ -39,6 +39,14 @@ class InMemoryBookingServiceTest {
     }
 
     @Test
+    void bookingCanStoreNotes() {
+        Booking booking = api.createBooking("R1", 540, 600, null,
+                "Projector requested");
+
+        assertEquals("Projector requested", booking.getNotes());
+    }
+
+    @Test
     void touchingRangesDoNotConflict() {
         api.createBooking("R1", 540, 600, null);
 

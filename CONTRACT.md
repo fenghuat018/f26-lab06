@@ -19,12 +19,37 @@ The consumer’s existing call sites still use the same arguments as before, so 
 
 ### What happened
 
-**The result.** What the build printed for each module.
+**The result.** 
 
-**If your prediction was wrong,** say what you missed.
+The build passed. Maven built all three reactor modules successfully: `lab06-booking-parent`, `lab06-api`, and `lab06-consumer`.
 
-**Is an additive change always safe in Java?** One case where adding something
-to an API still breaks a caller, if you can name one.
+For `lab06-api`, Maven ran `InMemoryBookingServiceTest`: 6 tests ran, 0 failures, 0 errors, 0 skipped.
+
+For `lab06-consumer`, Maven ran `FrontDeskTest`: 7 tests ran, 0 failures, 0 errors, 0 skipped.
+
+The reactor summary printed `SUCCESS` for all modules and ended with `BUILD SUCCESS`.
+
+**If your prediction was wrong,** 
+
+It was not wrong. The untouched consumer still compiled and passed.
+
+**Is an additive change always safe in Java?** 
+
+No. For example, in this project the original call in `consumer` is:
+
+`api.createBooking(roomId, startMinute, endMinute, null)`
+
+Right now that clearly matches:
+
+`createBooking(String roomId, long startMinute, long endMinute, String waitlistKey)`
+
+But imagine the API added another four-argument overload like:
+
+`createBooking(String roomId, long startMinute, long endMinute, Integer priority)`
+
+Then the existing call with `null` as the fourth argument could become ambiguous, 
+because `null` can match both `String` and `Integer`. The consumer did not change, 
+but it could fail at compile time.
 
 ---
 
