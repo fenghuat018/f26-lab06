@@ -168,27 +168,49 @@ Not coded. One misuse, one redesign, one cost. Discuss it with your TA.
 
 ### The misuse
 
-**What is easy to get wrong.** One specific thing about the API surface.
+**What is easy to get wrong.** 
 
-**The call site.** File and line in `consumer/`, with the call. Show the
-code that a reader cannot understand without opening the javadoc, or that a
-caller could get wrong with the compiler still happy.
+The boolean parameter in `cancelBooking(long bookingId, boolean notifyWaitlist)` is easy to misuse. A caller can pass `true` or `false`, but the call site does not explain what the boolean means unless the reader opens the javadoc.
 
-**What goes wrong when it happens.** Silent bad behavior, wrong data, a crash
-somewhere far away?
+**The call site.** 
+
+In `consumer/src/main/java/edu/cmu/cs214/frontdesk/FrontDesk.java`:
+
+`return api.cancelBooking(bookingId, true);` and `return api.cancelBooking(bookingId, false);`
+
+A reader cannot tell from `true` or `false` alone whether this means “notify the waitlist,” “cancel quietly,” “force cancel,” or something else.
+
+**What goes wrong when it happens.** 
+
+**Silent bad behavior:** If the caller passes the wrong boolean, the code still compiles, but the behavior silently changes. A quiet cancellation might accidentally promote someone from the waitlist, or a cancellation that should notify the waitlist might leave everyone waitlisted.
+
 
 ### The redesign
 
-**The proposal.** Types, enums, factories, or whatever you are proposing. Show
-the new signature and the new call site.
+**The proposal.** 
 
-**Why the mistake is now hard or impossible to make.** Point at the mechanism,
-such as the compiler, a validating constructor, or an exhaustive switch.
+Replace the boolean with an enum that names the choice:
+
+`boolean cancelBooking(long bookingId, CancellationPolicy policy)`
+
+For example:
+
+`enum CancellationPolicy { PROMOTE_WAITLIST, QUIET }`
+
+The new call sites would be:
+
+`api.cancelBooking(bookingId, CancellationPolicy.PROMOTE_WAITLIST);` and `api.cancelBooking(bookingId, CancellationPolicy.QUIET);`
+
+**Why the mistake is now hard or impossible to make.** 
+
+The enum makes the meaning visible at the call site. The compiler also prevents random booleans from being passed, so a caller must choose one of the named cancellation policies.
 
 ### One tradeoff
 
-**What it costs.** Something real, such as caller ceremony, migration burden
-against the deprecation path you just built, or more types for a newcomer to
-learn. "No real downside" does not count.
+**What it costs.** 
 
-**When the price is worth paying.** A condition under which it is.
+It adds another type for callers to learn, and existing callers must migrate from the boolean overload. To avoid breaking them immediately, the old boolean method would need to stay temporarily as a deprecated overload that delegates to the enum version.
+
+**When the price is worth paying.** 
+
+It is worth paying when the boolean controls meaningful business behavior, especially behavior with side effects like promoting someone from the waitlist. In that case, making the call site self-explanatory is more valuable than keeping the API slightly shorter.
