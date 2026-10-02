@@ -11,10 +11,11 @@ Keep it short and specific. Point at methods, call sites, and error text.
 
 ### Prediction (write this before you run the build, and you can deliberate with your agent)
 
-**Will the consumer, untouched, still compile and pass?** Yes or no.
+**Will the consumer, untouched, still compile and pass?** Yes.
 
-**Why.** What does the compiler do with the consumer's existing call sites once
-the new overload exists?
+**Why.** 
+
+The consumer’s existing call sites still use the same arguments as before, so the compiler should continue resolving those calls to the original method signature. Adding an overload is additive as long as the old method remains and the new overload does not make the existing calls ambiguous. The new overload only affects callers that use the new parameter list or argument types.
 
 ### What happened
 
