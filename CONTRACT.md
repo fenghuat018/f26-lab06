@@ -124,14 +124,41 @@ consumer against the changed API.
 
 **What you added.** The signatures that came back, and what they delegate to.
 
+I added back both old positional overloads on `BookingApi` as deprecated
+default methods:
+
+`Booking createBooking(String roomId, long startMinute, long endMinute, String waitlistKey)`
+
+This delegates to:
+
+`createBooking(new BookingRequest(roomId, startMinute, endMinute, waitlistKey, null))`
+
+`Booking createBooking(String roomId, long startMinute, long endMinute, String waitlistKey, String notes)`
+
+This delegates to:
+
+`createBooking(new BookingRequest(roomId, startMinute, endMinute, waitlistKey, notes))`
+
 **The warnings.** Paste one deprecation warning line from the build log (from
 a `mvn -B clean test` run, since a rerun with nothing to compile prints none).
+
+`[WARNING] /Users/tongfenghua/My mac/CMU-Learning/Agent Eng/f26-lab06/consumer/src/main/java/edu/cmu/cs214/frontdesk/FrontDesk.java:[27,19] createBooking(java.lang.String,long,long,java.lang.String) in edu.cmu.cs214.booking.BookingApi has been deprecated`
 
 **What the deprecation path resolves.** Who can now build that could not build
 during step 1, and who is on which schedule.
 
+The untouched `consumer` module can now build again. In step 1, it failed at
+compile time because its old positional calls no longer matched the API. With
+the deprecated overloads restored, old callers can keep building for now, while
+new callers can move to `createBooking(BookingRequest)`.
+
 **What the warnings accomplish that a README note would not.** Be concrete
 about where the warning shows up and who sees it without looking for it.
+
+The warnings show up directly in the compiler output at the old call sites in
+`FrontDesk.java`. A caller sees the warning during their normal build, including
+the file and line number to update. A README note only helps someone who knows
+to go read it.
 
 ---
 
